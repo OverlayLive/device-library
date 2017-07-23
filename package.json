@@ -1,0 +1,31 @@
+{
+  "name": "device-library",
+  "version": "1.0.0",
+  "description": "Overlay.live device management library",
+  "main": "./lib/device-library",
+  "scripts": {
+    "test": "mocha --watch ./src/test/overlaylive-device.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OverlayLive/device-library.git"
+  },
+  "keywords": [
+    "iot"
+  ],
+  "author": "Overlay.live",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/OverlayLive/device-library/issues"
+  },
+  "homepage": "https://github.com/OverlayLive/device-library#readme",
+  "devDependencies": {
+    "expect.js": "^0.3.1",
+    "gulp": "^3.9.1",
+    "mocha": "^3.4.2"
+  },
+  "dependencies": {
+    "autobahn": "^17.5.2",
+    "q": "^1.5.0"
+  }
+}

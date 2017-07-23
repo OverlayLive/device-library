@@ -1,1 +1,1 @@
-# device-library
+# Overlay.live device management library
