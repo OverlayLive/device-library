@@ -1,5 +1,5 @@
 {
-  "name": "device-library",
+  "name": "overlaylive-device-library",
   "version": "1.0.0",
   "description": "Overlay.live device management library",
   "main": "./lib/device-library",
