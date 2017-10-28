@@ -57,6 +57,21 @@ manager.start().then(function(){
 });
 ```
 
+The manager will automaticaly load the file ```device-config.js``` describing Overlay.live platform configuration. This file should look like this :
+
+```
+module.exports = {
+  apiKey: 'YOUR_OVERLAYLIVE_API_KEY',
+  ingest: 'ingest.epeakgears.com',
+  deviceKey: 'YOUR_CUSTOM_DEVICE_NAME'
+}
+```
+
+This file must be located at project root by default. But you can change where the Library will search for this file by doing this : 
+
+```
+manager.settings.configFile = 'your/path/to/device-config.js';
+```
 
 ## Versioning
 
