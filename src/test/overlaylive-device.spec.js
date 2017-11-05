@@ -1,5 +1,6 @@
 var expect = require('expect.js');
 var fs = require('fs');
+var autobahn = require('autobahn');
 
 var OverlayLiveDevice = require('../lib/overlaylive-device.js');
 var testData = require('./test-data.js');
@@ -26,7 +27,6 @@ describe('Test offline functions', function() {
   it('Should add the sensorData to the stored sensor list', testSensorDeclarationLogic);
   it('Should verify that a sensor is not registered', testSensorNotRegistered);
   it('Should verify that a sensor is registered', testSensorRegistered);
-
 });
 
 describe('Test System ingest', function() {
@@ -45,20 +45,224 @@ describe('Test user ingest functions', function() {
 
   // Executed after each test
   afterEach(function(done) {
-    ingestLib.closeUserIngest()
+    ingestLib.closeConnection()
 	.then(function() {
       done();
     });
   });
   
-  
   it('Should throw an exception because the device is not connected to the user ingest yet', testPublishWhenNotConnectedToIngest);
   it('Should properly close the user ingest connection', testIngestClose);
   it('Should do nothing because the sensor is not defined', testPublishDataOnNotRegisteredSensor);
   it('Should publish data on the channel', testPublishDataOnRegisteredSensor);
+
 });
 
+describe('Test Commands', function() {
+  beforeEach(function() {
+    var config = require('../test/device-config.js');
+    ingestLib = new OverlayLiveDevice(config);
+  });
+
+  // Executed after each test
+  afterEach(function(done) {
+    ingestLib.closeConnection()
+	  .then(function() {
+      done();
+    });
+  });
+
+  it('Should send a command', testSendValidCommand);
+  it('Should return an error when sending undefined command', testSendInvalidCommand);
+  it('Should return an error when declaring a command more than once', testMultipleCommandDeclaration);
+  it('Should call a command without parameters', testCommandWithoutParams);
+  it('should manage the error in the custom command',testCommandWithErrors);
+})
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function testCommandWithErrors(done) {
+  console.log('');
+  console.log('');
+  console.log('TEST testCommandWithErrors');
+
+  this.timeout(5000); // Increase timeout because process takes time on the backend
+  ingestLib.settings.configFile = '../test/device-config.js';
+  ingestLib.settings.mode = 'managed';
+  ingestLib.declareCommand('ERR', function() {
+    console.log('In command executor WITHOUT_PARAMS');
+    callUnknownFunction();
+  });
+
+  
+  console.log('--------------------');
+  console.log('View commands :');
+  console.log(ingestLib.customCommands);
+
+  ingestLib.start().then(function() {
+      // Connect to the device from the Ingest
+      var connection = new autobahn.Connection({
+        max_retries: 0,
+        url: 'wss://ingest.epeakgears.com:1337/ws',
+        realm: 'bd9f0e0f743690928c81ad254a0f0fa68e227166' 
+      });
+      
+      connection.onopen = function(session) {
+        console.log('Send command...');
+        session.call('COMMAND', ['ERR'])
+        .then(function(result) {
+          expect(result.status).to.be('KO');
+          done();
+        }, function(err) {
+          console.log(err);
+          done(err);
+        });
+      };
+    
+      connection.open();
+  });
+}
+
+
+function testCommandWithoutParams(done) {
+  console.log('');
+  console.log('');
+  console.log('TEST testCommandWithoutParams');
+
+  this.timeout(5000); // Increase timeout because process takes time on the backend
+  ingestLib.settings.configFile = '../test/device-config.js';
+  ingestLib.settings.mode = 'managed';
+  ingestLib.declareCommand('WITHOUT_PARAMS', function() {
+    console.log('In command executor WITHOUT_PARAMS');
+    return 'Hello i am working';
+  });
+
+  console.log('--------------------');
+  console.log('View commands :');
+  console.log(ingestLib.customCommands);
+
+  ingestLib.start().then(function() {
+      // Connect to the device from the Ingest
+      var connection = new autobahn.Connection({
+        max_retries: 0,
+        url: 'wss://ingest.epeakgears.com:1337/ws',
+        realm: 'bd9f0e0f743690928c81ad254a0f0fa68e227166' 
+      });
+      
+      connection.onopen = function(session) {
+        console.log('Send command...');
+        session.call('COMMAND', ['WITHOUT_PARAMS'])
+        .then(function(result) {
+          console.log('results:');
+          console.log(result);
+          expect(result.result).to.be('Hello i am working');
+          done();
+        }, function(err) {
+          console.log(err);
+          done(err);
+        });
+      };
+    
+      connection.open();
+  });
+}
+
+function testSendValidCommand(done) {
+  console.log('');
+  console.log('');
+  console.log('TEST testSendValidCommand');
+
+  this.timeout(5000); // Increase timeout because process takes time on the backend
+  ingestLib.settings.configFile = '../test/device-config.js';
+  ingestLib.settings.mode = 'managed';
+  ingestLib.declareCommand('SAY_HELLO', function(params) {
+    console.log('In command executor');
+    return 'Hello ' + params.name;
+  });
+
+  console.log('--------------------');
+  console.log('View commands :');
+  console.log(ingestLib.customCommands);
+
+  ingestLib.start().then(function() {
+      console.log('CONNECTED');
+      // Connect to the device from the Ingest
+      var connection = new autobahn.Connection({
+        max_retries: 0,
+        url: 'wss://ingest.epeakgears.com:1337/ws',
+        realm: 'bd9f0e0f743690928c81ad254a0f0fa68e227166' 
+      });
+      
+      connection.onopen = function(session) {
+        console.log('Send command...');
+        session.call('COMMAND', ['SAY_HELLO', {name:'Overlay.live'}])
+        .then(function(result) {
+          expect(result.result).to.be('Hello Overlay.live');
+          done();
+        }, function(err) {
+          console.log(err);
+          done(err);
+        });
+      };
+    
+      connection.open();
+  });
+}
+
+function testSendInvalidCommand(done) {
+  console.log('');
+  console.log('');
+  console.log('TEST testSendInvalidCommand');
+
+  this.timeout(5000); // Increase timeout because process takes time on the backend
+  ingestLib.settings.configFile = '../test/device-config.js';
+  ingestLib.settings.mode = 'managed';
+
+  console.log('--------------------');
+  console.log('View commands :');
+  console.log(ingestLib.customCommands);
+
+  ingestLib.start().then(function() {
+    // Connect to the device from the Ingest
+    var connection = new autobahn.Connection({
+      max_retries: 0,
+      url: 'wss://ingest.epeakgears.com:1337/ws',
+      realm: 'bd9f0e0f743690928c81ad254a0f0fa68e227166' 
+    });
+    
+    connection.onopen = function(session) {
+      console.log('Send command...');
+      session.call('COMMAND', ['SAY_SOMETHING', {name:'Overlay.live'}])
+      .then(function(result) {
+        expect(result.status).to.be('KO');
+        done();
+      }, function(err) {
+        console.log(err);
+        done(err);
+      });
+    };
+
+    connection.open();
+  });
+}
+
+function testMultipleCommandDeclaration() {
+  var lib = new OverlayLiveDevice('testSendValidCommand');
+  lib.settings.configFile = '../test/device-config.js';
+  lib.settings.mode = 'managed';
+  lib.declareCommand('SAY_HELLO', function(params) {
+    console.log('In command executor');
+    return 'Hello ' + params.name;
+  });
+
+  function willThrowError() {
+    lib.declareCommand('SAY_HELLO', function(params) {
+      console.log('In command executor');
+      return 'Hello ' + params.name;
+    });
+  }
+
+  expect(willThrowError).to.throwException('There is already a command named SAY_HELLO declared on the device');
+}
 
 function testReadIngestFromManagedDeviceConfigFile() {
   delete process.env.INGEST; // Ensure the env var is not set
