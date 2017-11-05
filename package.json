@@ -25,6 +25,7 @@
     "mocha": "^3.4.2"
   },
   "dependencies": {
+    "async": "^2.6.0",
     "autobahn": "^17.5.2",
     "q": "^1.5.0"
   }

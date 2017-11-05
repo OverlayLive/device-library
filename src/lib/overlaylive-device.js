@@ -1,5 +1,6 @@
 var fs = require('fs');
 var Q = require('q');
+var async = require('async');
 var autobahn = require('autobahn');
 var path = require('path');
 
@@ -10,11 +11,11 @@ var path = require('path');
 var OverlayLiveDevice = function(userSettings) {
   /* Shortcut to the service  */
   var lib = this;
-
+  
   /* The declared sensors */
   this.sensors = [];
 
-  /* The extensible defualt settings for manual use */
+  /* The extensible default settings for manual use */
   this.settings = {
     mode: 'manual',
     apiKey: userSettings ? userSettings.apiKey : '',
@@ -30,6 +31,9 @@ var OverlayLiveDevice = function(userSettings) {
 
   /* The publish calls timestamps */
   this.publishCalls = {};
+
+  /* The defined commands on this device */
+  this.customCommands = {};
 
   /**
    * Setup the manager for the managed mode.
@@ -276,23 +280,47 @@ var OverlayLiveDevice = function(userSettings) {
       //console.log('Connection already closed');
       def.resolve();
     } else {
-      var procedure = lib.userIngest.procedure;
-      if(procedure !== undefined && procedure instanceof autobahn.Registration) {
-        lib.userIngest.session.unregister(lib.userIngest.procedure).then(function() {
-          // console.log('Closed connection and unregistered procedure');
-          lib.userIngest.session = undefined;
-          lib.userIngest.procedure = undefined;
-          def.resolve();
-        }, function(err) {
-          def.reject(err);
+      var procedures = ['procedure', 'commandProcedure'];
+      async.map(procedures, function(procedure, callback) {
+        lib.unregisterProcedure(procedure)
+        .then(function() {
+          callback(null, procedure);
+        }).fail(function(err) {
+          callback(err, procedure);
         });
-      } else {
-        //console.log('Closed connection');
+      }, function(err, result) {
         lib.userIngest.session = undefined;
-        lib.userIngest.procedure = undefined;
-        def.resolve();
-      }
+        if(err) {
+          def.reject(err);
+        } else {
+          def.resolve();
+        }
+      });
     }
+    return def.promise;
+  }
+
+  /**
+   * Unregisters a procedure (internal use).
+   */
+  this.unregisterProcedure = function(procedure) {
+    var def = Q.defer();
+
+    console.log('Unregister procedure ' + procedure + '...');
+    var proc = lib.userIngest[procedure];
+    if(proc !== undefined && proc instanceof autobahn.Registration) {
+      lib.userIngest.session.unregister(proc).then(function() {
+        console.log('Unregistered procedure ' + procedure);
+        lib.userIngest[procedure] = undefined;
+        def.resolve();
+      }, function(err) {
+        def.reject(err);
+      });
+    } else {
+      lib.userIngest[procedure] = undefined;
+      def.resolve();
+    }
+
     return def.promise;
   }
 
@@ -300,7 +328,7 @@ var OverlayLiveDevice = function(userSettings) {
    * Publish data to the user ingest.
    */
   this.publish = function(sensorChannel, value) {
-    def = Q.defer();
+    var def = Q.defer();
 
     if(lib.userIngest === undefined || lib.userIngest.session === undefined) {
       throw 'Not connected to the user ingest';
@@ -333,6 +361,92 @@ var OverlayLiveDevice = function(userSettings) {
   }
 
   /**
+   * Add the definition of a device command.
+   */
+  this.declareCommand = function(name, command) {
+    if(lib.customCommands[name] !== undefined)
+    {
+      throw 'There is already a command named ' + name + ' declared on the device';
+    }
+    lib.customCommands[name] = command;
+  }
+
+  /**
+   * Setups system Commands and user defined commands
+   */
+  this.setupCommands = function() {
+    var def = Q.defer();
+
+    lib.userIngest.session.register('COMMAND', function(args, kwargs, details) {
+      var command = args[0];
+      var params = args[1];
+      var commandExecutor;
+
+      console.log('Call COMMAND ' + command);
+      //console.log('Commands available');
+      //console.log(lib.customCommands);
+      for(var comm in lib.customCommands) {
+        console.log('test : ' + command + " === " + comm);
+        if(command === comm) {
+          commandExecutor = lib.customCommands[comm];
+        }
+      }
+
+      if(commandExecutor === undefined) {
+        return {
+          status: 'KO',
+          message: 'No command ' + command + ' declared on this device'
+        };
+      } else {
+        try {
+          var result = commandExecutor(params);
+          return {
+            status: 'OK',
+            result: result
+          }
+        } catch(e) {
+          return {
+            status: 'KO',
+            message : 'Error in custom command',
+            error: e.stack
+          }
+        }
+      }
+
+    })
+    .then(function(registration) {
+      console.log('Registered COMMAND procedure');
+      lib.userIngest.commandProcedure = registration;
+      def.resolve();
+    }, function(err) {
+      if(err.error === 'wamp.error.procedure_already_exists') {
+        console.log('>> ERROR : wamp.error.procedure_already_exists');
+        def.reject(err);
+      } else {
+        def.reject(err);
+      }
+    });
+    
+    return def.promise;
+  }
+
+  /**
+   * Closes the connecion to the ingests
+   */
+  this.closeConnection = function() {
+    var def = Q.defer();
+
+    lib.closeUserIngest()
+    .then(function() {
+      def.resolve();
+    }).fail(function(){
+      def.reject(err);
+    });
+
+    return def.promise;
+  }
+
+  /**
    * Starts the Overlay.live device.
    */
   this.start = function() {
@@ -345,7 +459,10 @@ var OverlayLiveDevice = function(userSettings) {
     })
     .then(function() {
       return lib.connectToUserIngest(); // Connect to user ingest
-    }) 
+    })
+    .then(function() {
+      return lib.setupCommands();       // Setup Commands
+    })
     .then(function() {
       console.log('Now connected!');
       def.resolve();
