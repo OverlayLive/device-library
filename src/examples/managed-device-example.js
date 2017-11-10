@@ -34,7 +34,7 @@ manager.start().then(function(){
     var temperature = getTemperature();
 
     // Publish the value to the Overlay.live platform
-    manager.publish('Temperature', temperature);
+    manager.publish('temperature', temperature);
 
   }, 500);
 });
