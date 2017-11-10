@@ -1,14 +1,14 @@
 //Includes
 var sensorLib = require("node-dht-sensor");
 var overlayliveDevice = require('../lib/overlaylive-device.js');
-
+var config = require('./device-config.js');
 
 // Vars
 var sensor = require('node-dht-sensor');
 
 
 // 1. Setup the manager
-var manager = new overlayliveDevice();
+var manager = new overlayliveDevice(config);
 
 
 // 2. Describe used sensors - load them from array definition
