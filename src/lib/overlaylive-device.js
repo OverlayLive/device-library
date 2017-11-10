@@ -1,11 +1,13 @@
 var fs = require('fs');
 var Q = require('q');
 var autobahn = require('autobahn');
+var path = require('path');
 
 /**
  * The Overlay.live device management library.
+ * @param userSettings the user defined device settings
  */
-var OverlayLiveDevice = function() {
+var OverlayLiveDevice = function(userSettings) {
   /* Shortcut to the service  */
   var lib = this;
 
@@ -15,7 +17,9 @@ var OverlayLiveDevice = function() {
   /* The extensible defualt settings for manual use */
   this.settings = {
     mode: 'manual',
-    configFile: 'device-config.js'
+    apiKey: userSettings ? userSettings.apiKey : '',
+    ingest: userSettings ? userSettings.ingest : '',
+    deviceKey: userSettings ? userSettings.deviceKey : '',
   };
 
   /* The system ingest data */
@@ -32,7 +36,12 @@ var OverlayLiveDevice = function() {
    */
   this.setManagedMode = function() {
     lib.settings.mode = 'managed';
-    lib.settings.configFile = '/data/overlaylive-config.json';
+
+    var config = require('/data/overlaylive-config.json');
+    lib.settings.apiKey = config.apiKey;
+    lib.settings.ingest = config.ingest;
+    lib.settings.deviceKey = config.deviceKey;
+    console.log(config);
   }
 
   /**
@@ -41,17 +50,15 @@ var OverlayLiveDevice = function() {
   this.getApiKey = function() {
     var apiKey = undefined;
     if(lib.settings.mode === 'manual') {
-      // Search the API Key inthe configFile
-      var deviceConfig = require(lib.settings.configFile);
-      apiKey = deviceConfig.apiKey;
+      // Search the API Key in the settings
+      apiKey = this.settings.apiKey;
     } else {
       // Get API key from the env variable
       apiKey = process.env.API_KEY;
 	    //console.log(apiKey === undefined);
       if(apiKey === undefined) {
-        // The device is not initialized yet, get this value from the config file
-        var deviceConfig = require(lib.settings.configFile);
-        apiKey = deviceConfig.apiKey;
+        // The device is not initialized yet, get this value from the settings
+        apiKey = this.settings.apiKey;
       }
     }
 
@@ -64,15 +71,13 @@ var OverlayLiveDevice = function() {
   this.getIngest = function() {
     var ingest = undefined;
     if(lib.settings.mode === 'manual') {
-      // Search the ingest server in the configFile
-      var deviceConfig = require(lib.settings.configFile);
-      ingest = deviceConfig.ingest;
+      // Search the ingest server in the settings
+      ingest = this.settings.ingest;
     } else {
       ingest = process.env.INGEST;
       if(ingest === undefined) {
-        // ingest device is not initialized yet, get this value from the config file
-        var deviceConfig = require(lib.settings.configFile);
-        ingest = deviceConfig.ingest;
+        // ingest device is not initialized yet, get this value from the settings
+        ingest = this.settings.ingest;
       }
     }
     return ingest;
@@ -84,9 +89,8 @@ var OverlayLiveDevice = function() {
   this.getDeviceKey = function() {
     var deviceID = undefined;
     if(lib.settings.mode === 'manual') {
-      // Search for the device ID in the configFile
-      var deviceConfig = require(lib.settings.configFile);
-      deviceID = deviceConfig.deviceKey;
+      // Search for the device ID in the settings
+      deviceID = this.settings.deviceKey;
     } else {
       deviceID = process.env.RESIN_DEVICE_UUID;
     }
@@ -343,6 +347,7 @@ var OverlayLiveDevice = function() {
       return lib.connectToUserIngest(); // Connect to user ingest
     }) 
     .then(function() {
+      console.log('Now connected!');
       def.resolve();
     }).catch(function(err) {
       def.reject(err);
