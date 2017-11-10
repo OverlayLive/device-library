@@ -140,7 +140,7 @@ var OverlayLiveDevice = function() {
    */
   this.checkSensorStructure = function(sensorData) {
     var isOk = true;
-    var properties = ['channel', 'name'];
+    var properties = ['channel', 'name', 'unit'];
     for(var i = 0; i < properties.length; i++) {
       if(sensorData[properties[i]] === undefined) isOk = false;
     }
