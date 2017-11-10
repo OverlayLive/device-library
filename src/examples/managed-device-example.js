@@ -6,20 +6,24 @@ var manager = new overlayliveDevice();
 // 2. Describe used sensors one by one :
 manager.declareSensor({
   'name': 'Temperature',
-  'channel': 'temperature'
+  'channel': 'temperature',
+  'unit': '°C'
 });
 manager.declareSensor({
   'name': 'Voltage',
-  'channel': 'voltage'
+  'channel': 'voltage',
+  'unit': 'V'
 });
 
 // ... or load them from an array definition :
 manager.declareSensors([{
   'name': 'Altitude',
-  'channel': 'altitude'
+  'channel': 'altitude',
+  'unit': 'm'
 }, {
   'name': 'Speed',
-  'channel': 'speed'
+  'channel': 'speed',
+  'unit': 'km/h'
 }])
 
 // 3. Connect to the Overlay.live platform
