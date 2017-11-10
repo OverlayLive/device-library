@@ -1,7 +1,8 @@
-var overlayliveDevice = require('../lib/overlaylive-device.js');
+var overlayliveDevice = require('../../lib/overlaylive-device.js');
+var config = require('./device-config.js');
 
 // 1. Setup the manager
-var manager = new overlayliveDevice();
+var manager = new overlayliveDevice(config);
 
 // 2. Describe used sensors one by one :
 manager.declareSensor({
@@ -35,6 +36,8 @@ manager.start().then(function(){
 
     // Publish the value to the Overlay.live platform
     manager.publish('temperature', temperature);
+
+    console.log('Sending data...');
 
   }, 500);
 });
