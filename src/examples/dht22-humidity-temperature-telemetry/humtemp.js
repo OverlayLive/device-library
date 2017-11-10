@@ -5,8 +5,6 @@ var overlayliveDevice = require('../lib/overlaylive-device.js');
 
 // Vars
 var sensor = require('node-dht-sensor');
-var temp_read;
-var hum_read;
 
 
 // 1. Setup the manager
