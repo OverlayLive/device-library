@@ -13,6 +13,7 @@ module.exports = {
     customSensor : { 
       channel: 'sensor-channel',
       name: 'Sensor name',
+      unit: 'T',
       customProperty: 'sensor custom property'
     }
   },
