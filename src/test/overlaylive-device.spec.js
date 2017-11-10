@@ -1,4 +1,5 @@
 var expect = require('expect.js');
+var fs = require('fs');
 
 var OverlayLiveDevice = require('../lib/overlaylive-device.js');
 var testData = require('./test-data.js');
@@ -8,6 +9,9 @@ var ingestLib;
 
 // Tests declarations
 describe('Test offline functions', function() {
+  before(createManagedDeviceConfigFile);
+  after(deleteManagedDeviceConfigFile);
+
   it('Should read the API key from device config file (manual use)', testReadApiKeyManualMode);
   it('Should read the API key from managed device env var', testReadApiKeyManagedMode);
   it('Should read the API key from the managed device config file', testReadApiKeyFromManagedDeviceConfigFile);
@@ -22,6 +26,7 @@ describe('Test offline functions', function() {
   it('Should add the sensorData to the stored sensor list', testSensorDeclarationLogic);
   it('Should verify that a sensor is not registered', testSensorNotRegistered);
   it('Should verify that a sensor is registered', testSensorRegistered);
+
 });
 
 describe('Test System ingest', function() {
@@ -33,7 +38,10 @@ describe('Test System ingest', function() {
 describe('Test user ingest functions', function() {
 	
   // Executed once before all tests
-  before(function() { ingestLib = new OverlayLiveDevice(); });
+  before(function() {
+    var config = require('../test/device-config.js');
+    ingestLib = new OverlayLiveDevice(config);
+  });
 
   // Executed after each test
   afterEach(function(done) {
@@ -53,23 +61,20 @@ describe('Test user ingest functions', function() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function testReadIngestFromManagedDeviceConfigFile() {
-  var lib = new OverlayLiveDevice();
   delete process.env.INGEST; // Ensure the env var is not set
-  lib.settings.configFile = '../test/device-config.js';
-  lib.settings.mode = 'managed';
+  var lib = new OverlayLiveDevice();
+  lib.setManagedMode();
   expect(lib.getIngest()).to.be('ingest.epeakgears.com');
 }
 
 function testReadApiKeyFromManagedDeviceConfigFile() {
-  var lib = new OverlayLiveDevice();
   delete process.env.API_KEY; // Ensure the env var is not set
-  lib.settings.configFile = '../test/device-config.js';
-  lib.settings.mode = 'managed';
+  var lib = new OverlayLiveDevice();
+  lib.setManagedMode();
   expect(lib.getApiKey()).to.be('bd9f0e0f743690928c81ad254a0f0fa68e227166');
 }	
 
 function testPublishDataOnRegisteredSensor(done) {
-  ingestLib.settings.configFile = '../test/device-config.js';
   ingestLib.declareSensor(testData.sensor.fullSensor);
 
   ingestLib.connectToUserIngest().then(function() {
@@ -83,7 +88,6 @@ function testPublishDataOnRegisteredSensor(done) {
 }
 
 function testPublishDataOnNotRegisteredSensor(done) {
-  ingestLib.settings.configFile = '../test/device-config.js';
   ingestLib.connectToUserIngest()
   .then(function() {
     ingestLib.publish(testData.sensor.fullSensor.channel, 150)
@@ -97,7 +101,6 @@ function testPublishDataOnNotRegisteredSensor(done) {
 }
 
 function testIngestClose(done) {
-  ingestLib.settings.configFile = '../test/device-config.js';
   ingestLib.connectToUserIngest()
   .then(function() {
     return ingestLib.closeUserIngest();
@@ -116,8 +119,8 @@ function testPublishWhenNotConnectedToIngest() {
 
 function testDeviceRegistrationOnSystemIngest(done) {
   this.timeout(5000); // Increase timeout because process takes time on the backend
-  var lib = new OverlayLiveDevice();
-  lib.settings.configFile = '../test/device-config.js';
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   lib.connectToSystemIngest()
   .then(function(){
 	  console.log('connected to ingest server');
@@ -133,13 +136,14 @@ function testDeviceRegistrationOnSystemIngest(done) {
 }
 
 function testThrowExceptionOnRegistringDeviceWhenNotConnectedToIngest() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   expect(lib.registerDevice).to.throwException('');
 }
 
 function testConnectToSystemIngest() {
-  var lib = new OverlayLiveDevice();
-  lib.settings.configFile = '../test/device-config.js';
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   lib.connectToSystemIngest().then(function(session){
     done();
   }).catch(function(readon, details) {
@@ -149,24 +153,28 @@ function testConnectToSystemIngest() {
 }
 
 function testSensorRegistered() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   lib.declareSensor(testData.sensor.fullSensor);
   expect(lib.hasSensor(testData.sensor.fullSensor.channel)).to.be(true);
 }
 
 function testSensorNotRegistered() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   expect(lib.hasSensor('not-registered-sensor')).to.be(false);
 }
 
 function testSensorDeclarationLogic() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   lib.declareSensor(testData.sensor.fullSensor);
   expect(lib.getSensorList()[0]).to.be(testData.sensor.fullSensor);
 }
 
 function testSensorArrayDeclaration() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   var sensors = [
 	  testData.sensor.fullSensor,
 	  testData.sensor.customSensor
@@ -175,13 +183,15 @@ function testSensorArrayDeclaration() {
 }
 
 function testSensorDataStructureRejected() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   var invalidSensor = testData.sensor.invalidSensor;
   expect(lib.declareSensor.bind(invalidSensor)).to.throwException('Sensor data does not have a proper structure : ' + JSON.stringify(invalidSensor));
 }
 
 function testSensorDataStructure() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
 
   // Check valid sensor
   expect(lib.checkSensorStructure(testData.sensor.fullSensor)).to.be(true);
@@ -194,40 +204,56 @@ function testSensorDataStructure() {
 }
 
 function testReadDeviceKeyManagedMode() {
-  var lib = new OverlayLiveDevice();
-  lib.settings.mode = 'managed';
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
+  lib.setManagedMode();
   process.env.RESIN_DEVICE_UUID = 'device-key';
   expect(lib.getDeviceKey()).to.be('device-key');
 }
 
 function testReadDeviceKeyManualMode() {
-  var lib = new OverlayLiveDevice();
-  lib.settings.configFile = '../test/device-config.js';
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   expect(lib.getDeviceKey()).to.be('42b034e');
 }
 
 function testReadIngestManagedMode() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   lib.settings.mode = 'managed';
   process.env.INGEST = 'ingest-server';
   expect(lib.getIngest()).to.be('ingest-server');
 }
 
 function testReadIngestManualMode() {
-  var lib = new OverlayLiveDevice();
-  lib.settings.configFile = '../test/device-config.js';
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   expect(lib.getIngest()).to.be('ingest.epeakgears.com');	
 }
 
 function testReadApiKeyManagedMode() {
-  var lib = new OverlayLiveDevice();
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   lib.settings.mode = 'managed';
   process.env.API_KEY = 'the-api-key-managed';
   expect(lib.getApiKey()).to.be('the-api-key-managed');
 }
 
 function testReadApiKeyManualMode() {
-  var lib = new OverlayLiveDevice();
-  lib.settings.configFile = '../test/device-config.js';
+  var config = require('../test/device-config.js');
+  var lib = new OverlayLiveDevice(config);
   expect(lib.getApiKey()).to.be('bd9f0e0f743690928c81ad254a0f0fa68e227166');
+}
+
+function createManagedDeviceConfigFile() {
+  var content = {
+    apiKey: 'bd9f0e0f743690928c81ad254a0f0fa68e227166',
+    ingest: 'ingest.epeakgears.com',
+    deviceKey: '42b034e'
+  }
+  fs.writeFileSync('/data/overlaylive-config.json', JSON.stringify(content));
+}
+
+function deleteManagedDeviceConfigFile() {
+  fs.unlinkSync('/data/overlaylive-config.json');
 }
