@@ -2,7 +2,7 @@
   "name": "overlaylive-device-library",
   "version": "1.0.0",
   "description": "Overlay.live device management library",
-  "main": "./lib/device-library",
+  "main": "./src/lib/overlaylive-device.js",
   "scripts": {
     "test": "mocha --watch ./src/test/overlaylive-device.spec.js"
   },
