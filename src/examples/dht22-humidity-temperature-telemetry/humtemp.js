@@ -14,11 +14,11 @@ var manager = new overlayliveDevice(config);
 // 2. Describe used sensors - load them from array definition
 manager.declareSensors([{
   'name': 'Temperature',
-  'channel': 'temperature',
+  'channel': 'channel_temperature',
   'unit': 'C'
 }, {
   'name': 'Humidity',
-  'channel': 'humidity',
+  'channel': 'channel_humidity',
   'unit': '%'
 }])
 
@@ -37,8 +37,8 @@ manager.start().then(function(){
 	        );
 	
 		// Publish the value to the Overlay.live platform
-    		manager.publish('temperature', temperature.toFixed(1));
-    		manager.publish('humidity', humidity.toFixed(1));
+    		manager.publish('channel_temperature', temperature.toFixed(1));
+    		manager.publish('channel_humidity', humidity.toFixed(1));
 	    }
 	});
 
