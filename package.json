@@ -1,6 +1,6 @@
 {
   "name": "overlaylive-device-library",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Overlay.live device management library",
   "main": "./src/lib/overlaylive-device.js",
   "scripts": {
