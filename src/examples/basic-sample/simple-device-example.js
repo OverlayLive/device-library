@@ -7,12 +7,12 @@ var manager = new overlayliveDevice(config);
 // 2. Describe used sensors one by one :
 manager.declareSensor({
   'name': 'Temperature',
-  'channel': 'temperature',
+  'channel': 'channel_temperature',
   'unit': '°C'
 });
 manager.declareSensor({
   'name': 'Voltage',
-  'channel': 'voltage',
+  'channel': 'channel_voltage',
   'unit': 'V'
 });
 
@@ -35,7 +35,7 @@ manager.start().then(function(){
     var temperature = getTemperature();
 
     // Publish the value to the Overlay.live platform
-    manager.publish('temperature', temperature);
+    manager.publish('channel_voltage', temperature);
 
     console.log('Sending data...');
 
