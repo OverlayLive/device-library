@@ -1,3 +1,6 @@
+# 2.1.0
+- Added remote command call feature
+
 # 2.0.0
 - Fixed NPM library declaration
 - Added mandatory property "unit" for sensors
