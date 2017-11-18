@@ -46,11 +46,11 @@ Describe the sensors you will use :
 ```
 manager.declareSensor({
   'name': 'Temperature',
-  'channel': 'temperature'
+  'channel': 'temperature-channel'
 });
 manager.declareSensor({
   'name': 'Voltage',
-  'channel': 'voltage'
+  'channel': 'voltage-channel'
 });
 ```
 
@@ -63,10 +63,44 @@ manager.start().then(function(){
     var temperature = getTemperature();
 
     // Publish the value to the Overlay.live platform
-    manager.publish('Temperature', temperature);
+    manager.publish('temperature-channel', temperature);
 
   }, 500);
 });
+```
+
+To wire a custom function to be called from somewhere else on your device, you have to declare a "command". Here is the syntax :
+```
+lib.declareCommand('command_name', function() {
+  // Your device code goes here
+  var computedVar = 'Hello';
+  return computedVar;
+});
+```
+
+In order to call this command remotely, you will have to call the procedure ```COMMAND``` with the given parameters :
+
+ 1. The command name
+ 2. The command parameters (can be anything depending on how you want to manage it in your function)
+
+Here, we are calling the remote command ```say_hello``` with the parameter ```{name:'Overlay.live'}```
+```
+// autobahn session
+session.call('COMMAND', ['say_hello', {name:'Overlay.live'}])
+.then(function(result) {
+  // OK
+}, function(err) {
+  // Error
+});
+```
+
+The result is processed as a promise returning an object with this structure :
+```
+{
+  status: '', // OK if command was executed properly, KO if there was an execution error
+  result: '', // The returned value of your command to be usd by the callee
+  error: ''   // The error stacktrace if there was some error while running your code
+}
 ```
 
 ## Versioning
