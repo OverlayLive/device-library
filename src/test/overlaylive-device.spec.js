@@ -55,6 +55,7 @@ describe('Test user ingest functions', function() {
   it('Should properly close the user ingest connection', testIngestClose);
   it('Should do nothing because the sensor is not defined', testPublishDataOnNotRegisteredSensor);
   it('Should publish data on the channel', testPublishDataOnRegisteredSensor);
+  it('Should properly load device sensors and commands', testLoadSensorsAndCommands);
 
 });
 
@@ -80,6 +81,49 @@ describe('Test Commands', function() {
 })
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function testLoadSensorsAndCommands(done) {
+  console.log('');
+  console.log('');
+  console.log('TEST testLoadSensorsAndCommands');
+
+  this.timeout(5000); // Increase timeout because process takes time on the backend
+  ingestLib.settings.configFile = '../test/device-config.js';
+  ingestLib.settings.mode = 'managed';
+
+  ingestLib.declareCommand('test-command', function() {
+    // Empty command
+  });
+
+  ingestLib.start().then(function() {
+      // Connect to the device from the Ingest
+      var connection = new autobahn.Connection({
+        max_retries: 0,
+        url: 'wss://ingest.epeakgears.com:1337/ws',
+        realm: 'bd9f0e0f743690928c81ad254a0f0fa68e227166' 
+      });
+      
+      connection.onopen = function(session) {
+        console.log('Load sensors and commands...');
+        var uri = ingestLib.getDeviceKey() + '.proc_list_sensors';
+
+        console.log('Send command...');
+        session.call(uri)
+        .then(function(result) {
+          console.log('results:');
+          console.log(result);
+          expect(result.commands.length).to.be(1);
+          expect(result.commands[0]).to.be('test-command');
+          done();
+        }, function(err) {
+          console.log(err);
+          done(err);
+        });
+      };
+    
+      connection.open();
+  });
+}
+
 function testCommandWithErrors(done) {
   console.log('');
   console.log('');

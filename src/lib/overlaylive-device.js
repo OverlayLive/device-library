@@ -166,9 +166,19 @@ var OverlayLiveDevice = function(userSettings) {
    * Format the sensor list to be used by the Overlay.live platform.
    */
   this.callProcedureListSensors = function() {
-    console.log('Asked for sensor list : ' + lib.sensors);
+    console.log('Asked for sensor list : ');
+    console.log(lib.sensors);
+    console.log(lib.customCommands);
+
+    // Transform the custom commands object into an array
+    var commands = [];
+    for(key in lib.customCommands) {
+      commands.push(key);
+    }
+
     return {
-      sensors: lib.sensors
+      sensors: lib.sensors,
+      commands: commands
     }
   }
 
