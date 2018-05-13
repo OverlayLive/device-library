@@ -7,7 +7,7 @@ module.exports = [
     name: 'AQI Time', // [*] The default sensor name
     unit: 'hms', // The sensor type (temperature, voltage, etc)
     type: 'time',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   },
@@ -16,7 +16,7 @@ module.exports = [
     name: 'AQI PM2.5', // [*] The default sensor name
     unit: 'ppm', // The sensor type (temperature, voltage, etc)
     type: 'PM2.5',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   },
@@ -25,7 +25,7 @@ module.exports = [
     name: 'AQI PM10', // [*] The default sensor name
     unit: 'ppm', // The sensor type (temperature, voltage, etc)
     type: 'PM10',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   },
@@ -34,7 +34,7 @@ module.exports = [
     name: 'AQI CO2', // [*] The default sensor name
     unit: 'ppm', // The sensor type (temperature, voltage, etc)
     type: 'Carbon Monoxyde',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   },
@@ -43,7 +43,7 @@ module.exports = [
     name: 'AQI NO2', // [*] The default sensor name
     unit: 'ppm', // The sensor type (temperature, voltage, etc)
     type: 'Nitrogen Dioxide',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   },
@@ -52,7 +52,7 @@ module.exports = [
     name: 'AQI SO2', // [*] The default sensor name
     unit: 'ppm', // The sensor type (temperature, voltage, etc)
     type: 'Sulphur Dioxide',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   },
@@ -61,7 +61,7 @@ module.exports = [
     name: 'AQI Ozone', // [*] The default sensor name
     unit: 'ppm', // The sensor type (temperature, voltage, etc)
     type: 'Ozone',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   },
@@ -70,7 +70,7 @@ module.exports = [
     name: 'Temperature', // [*] The default sensor name
     unit: 'C', // The sensor type (temperature, voltage, etc)
     type: 'Temperature',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   },
@@ -79,7 +79,7 @@ module.exports = [
     name: 'Atmospheric pressure', // [*] The default sensor name
     unit: 'hPa', // The sensor type (temperature, voltage, etc)
     type: 'Pressure',
-    manufacturer: 'aqicn', // The sensor manufacturer
+    manufacturer: 'aqicn.org', // The sensor manufacturer
     version: '1.0', // The sensor version
     hardware: '1.0' // Additional hardware informations
   }
