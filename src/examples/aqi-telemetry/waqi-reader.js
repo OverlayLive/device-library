@@ -1,11 +1,15 @@
-var request = require("request");                                   // Load lib to ready POST from the API
+// Import dependencies
+// ----------------------------------------------------------------------------------------------------------------------------------------
+var request = require('request');                                      // Load lib to ready POST from the API
+// ----------------------------------------------------------------------------------------------------------------------------------------
 
 /**
  * Module to read AQI values from the World Air Quality Index. API source http://aqicn.org/api/
  * @param manager The Overlay.live manager
  * @param refreshInterval the refresh interval
+ * @param config_waqi the config for the readout
  */
-function WAQIReader(manager, refreshInterval) {
+function WAQIReader(manager, refreshInterval, config_waqi) {
 
   /**
    * Starts reading values.
@@ -16,18 +20,17 @@ function WAQIReader(manager, refreshInterval) {
 
   this.read = function() {
 
-    var url = "http://api.waqi.info/feed/@" +
-        "1599" +
-        "/?token=4bc4b13a1a250e7e4f264972602e574790aae32a"
+    // Building query URL from the WAQI config file.
+    var url = ""+ config_waqi.url + "@" + config_waqi.uid + "/?token=" + config_waqi.token;
+    console.log('Querying API URL : '+url);  //debug - to clean up
 
-        console.log('URL : '+url);
-
+    // Querying WAQI API for data
     request({
         url: url,
         json: true
     }, function (error, response, body) {
         if (!error && response.statusCode === 200) {
-            
+
             console.log('--------------');
 
             console.log('time: '+body.data.time.s);
@@ -58,8 +61,6 @@ function WAQIReader(manager, refreshInterval) {
             manager.publish('aqi-s9-atmpressure', body.data.iaqi.p.v);
         }
     })
-
-
   }
 };
 

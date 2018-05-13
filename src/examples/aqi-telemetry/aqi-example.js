@@ -4,6 +4,7 @@ var OverlayLiveDevice = require('../../lib/overlaylive-device.js'); // Overlay.l
 var sensors = require('./sensor-declaration.js');                   // Declaration of the sensors used bu this device
 var config = require('./device-config.js');                         // Load the device configuration
 var WAQIReader = require('./waqi-reader.js');                       // The I2C reader
+var config_waqi = require('./waqi-config.js');                      // Load WAQI API config file
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
 var AQI_Token = '4bc4b13a1a250e7e4f264972602e574790aae32a';
@@ -26,7 +27,7 @@ manager.start()
   var refreshInterval = 1000;
 
   // WAQI Reader
-  var myReader = new WAQIReader(manager, refreshInterval);
+  var myReader = new WAQIReader(manager, refreshInterval, config_waqi);
   myReader.startReading();
   console.log(' > Started WAQI Reader');
 })
