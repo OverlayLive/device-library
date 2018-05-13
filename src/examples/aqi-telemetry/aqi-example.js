@@ -1,3 +1,11 @@
+// About this sample code.
+// All the data pulled for this example is sourced through the aqicn.org API.
+// To use this sample code, please get your own API key over here: http://aqicn.org/data-platform/token/#/
+// All credit for the data goes to the World Air Quality Index project (WAQI) as well as the EPA that captured the data locally via sensors and made it accessible
+// Here is a complete list of EPAs that may provide data depening of your API querry : http://aqicn.org/sources/
+// Note: there is a limite of 1000 queries per minute.
+// Thanks!
+
 // Import dependencies
 // ----------------------------------------------------------------------------------------------------------------------------------------
 var OverlayLiveDevice = require('../../lib/overlaylive-device.js'); // Overlay.live managed device library v2.1.1 maually
