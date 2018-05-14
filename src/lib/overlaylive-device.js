@@ -173,7 +173,7 @@ var OverlayLiveDevice = function(userSettings) {
     // Transform the custom commands object into an array
     var commands = [];
     for(key in lib.customCommands) {
-      commands.push(key);
+      commands.push({name: key});
     }
 
     return {
