@@ -216,21 +216,25 @@ var OverlayLiveDevice = function(userSettings) {
    * Registers a device on the Overlay.live platform.
    */
   this.registerDevice = function() {
-    console.log('Register device...');
-    if(lib.systemIngest === undefined || lib.systemIngest.session === undefined) {
-      throw 'Not connected to the system ingest';
-    }
-
-    var deviceId = lib.getDeviceKey();
-    var realm = lib.getApiKey();
-    var ingest = lib.getIngest();
     var def = Q.defer();
-    var uuid = process.env.RESIN_DEVICE_UUID;
-    lib.systemIngest.session.call('declare.device', [deviceId, realm, ingest, uuid], {}, {receive_progress: true}).then(function(answer) {
+    if(lib.settings.mode === 'managed') {
+      console.log('Register device...');
+      if(lib.systemIngest === undefined || lib.systemIngest.session === undefined) {
+        throw 'Not connected to the system ingest';
+      }
+      var deviceId = lib.getDeviceKey();
+      var realm = lib.getApiKey();
+      var ingest = lib.getIngest();
+      var uuid = process.env.RESIN_DEVICE_UUID;
+      lib.systemIngest.session.call('declare.device', [deviceId, realm, ingest, uuid], {}, {receive_progress: true}).then(function(answer) {
+        def.resolve();
+      }).catch(function(err) {
+        def.reject(err);
+      });
+    } else {
+      console.log('Manual Device, no registration');
       def.resolve();
-    }).catch(function(err) {
-      def.reject(err);
-    });
+    }
 
     return def.promise;
   }
