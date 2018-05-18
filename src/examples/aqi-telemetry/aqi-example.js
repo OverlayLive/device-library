@@ -8,7 +8,7 @@
 
 // Import dependencies
 // ----------------------------------------------------------------------------------------------------------------------------------------
-var OverlayLiveDevice = require('../../lib/overlaylive-device.js'); // Overlay.live managed device library v2.1.1 maually
+var OverlayLiveDevice = require('overlaylive-device-library'); // Overlay.live managed device library v2.1.1 maually
 var sensors = require('./sensor-declaration.js');                   // Declaration of the sensors used bu this device
 var config = require('./device-config.js');                         // Load the device configuration
 var WAQIReader = require('./waqi-reader.js');                       // The I2C reader
