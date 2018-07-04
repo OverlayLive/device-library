@@ -1,3 +1,7 @@
+# 2.3.0
+- Added new procedure to check if the device is online
+- Improved logging
+
 # 2.1.0
 - Added remote command call feature
 
