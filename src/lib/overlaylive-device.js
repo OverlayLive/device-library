@@ -166,7 +166,7 @@ var OverlayLiveDevice = function(userSettings) {
    * Format the sensor list to be used by the Overlay.live platform.
    */
   this.callProcedureListSensors = function() {
-    console.log('Asked for sensor list : ');
+    console.log('>> Asked for sensor list : ');
     console.log(lib.sensors);
     console.log(lib.customCommands);
 
@@ -180,6 +180,11 @@ var OverlayLiveDevice = function(userSettings) {
       sensors: lib.sensors,
       commands: commands
     }
+  }
+  
+  this.callProcedureIsOnline = function() {
+	  console.log('>> Asked if sensor is Online');
+	  return true;
   }
 
   /**
@@ -260,10 +265,25 @@ var OverlayLiveDevice = function(userSettings) {
       // Register procedures
       var deviceKey = lib.getDeviceKey();
       var uri = deviceKey + '.proc_list_sensors';
+	  console.log('> Register Command : ' + uri);
       lib.userIngest.session.register(uri, lib.callProcedureListSensors).then(function(registration) {
         console.log('Registered list_sensors procedure');
         lib.userIngest.procedure = registration;
-        def.resolve(session);
+		
+		// Now register the online procedure
+		var uri = deviceKey + '.is_online';
+		lib.userIngest.session.register(uri, lib.callProcedureIsOnline).then(function(registration) {
+			console.log('Registered is_online procedure');
+			lib.userIngest.procedureOnline = registration;
+			def.resolve(session);
+		  }, function(err) {
+			if(err.error === 'wamp.error.procedure_already_exists') {
+			  def.resolve();
+			} else {
+			  def.reject(err);
+			}
+		  });
+		
       }, function(err) {
         if(err.error === 'wamp.error.procedure_already_exists') {
           def.resolve();
@@ -294,7 +314,7 @@ var OverlayLiveDevice = function(userSettings) {
       //console.log('Connection already closed');
       def.resolve();
     } else {
-      var procedures = ['procedure', 'commandProcedure'];
+      var procedures = ['procedure', 'commandProcedure', 'procedureOnline'];
       async.map(procedures, function(procedure, callback) {
         lib.unregisterProcedure(procedure)
         .then(function() {
@@ -396,20 +416,22 @@ var OverlayLiveDevice = function(userSettings) {
       var params = args[1];
       var commandExecutor;
 
-      console.log('Call COMMAND ' + command);
+      console.log('> Call COMMAND ' + command);
       //console.log('Commands available');
       //console.log(lib.customCommands);
       for(var comm in lib.customCommands) {
-        console.log('test : ' + command + " === " + comm);
+        //console.log('test : ' + command + " === " + comm);
         if(command === comm) {
           commandExecutor = lib.customCommands[comm];
         }
       }
 
       if(commandExecutor === undefined) {
+		var msg = 'No command ' + command + ' declared on this device';
+		console.log(msg);
         return {
           status: 'KO',
-          message: 'No command ' + command + ' declared on this device'
+          message: msg
         };
       } else {
         try {
@@ -419,6 +441,7 @@ var OverlayLiveDevice = function(userSettings) {
             result: result
           }
         } catch(e) {
+		  console.log(e);
           return {
             status: 'KO',
             message : 'Error in custom command',
