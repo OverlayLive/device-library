@@ -411,7 +411,9 @@ var OverlayLiveDevice = function(userSettings) {
   this.setupCommands = function() {
     var def = Q.defer();
 
-    lib.userIngest.session.register('COMMAND', function(args, kwargs, details) {
+    var deviceKey = lib.getDeviceKey();
+    var uri = deviceKey + '.COMMAND';
+    lib.userIngest.session.register(uri, function(args, kwargs, details) {
       var command = args[0];
       var params = args[1];
       var commandExecutor;

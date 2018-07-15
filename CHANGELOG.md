@@ -1,3 +1,6 @@
+# 2.3.1
+- Fixed the command registration
+
 # 2.3.0
 - Added new procedure to check if the device is online
 - Improved logging
