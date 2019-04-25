@@ -1,0 +1,11 @@
+requires CircuitPython 
+https://learn.adafruit.com/adafruit-stemma-soil-sensor-i2c-capacitive-moisture-sensor/python-circuitpython-test
+
+To install, run sudo pip3 install adafruit-circuitpython-seesaw
+Note: python 3 install is a requirement
+
+Customise your device-config.js file with your own API and device key for Overlay.live
+Install Overlay.live package
+npm install --save overlaylive-device-library
+
+Run with: node moisture.js
